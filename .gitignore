@@ -5,3 +5,4 @@ coverage/
 .turbo/
 .DS_Store
 Thumbs.db
+apps/server/.data/

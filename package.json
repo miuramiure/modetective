@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "vitest run --passWithNoTests",
-    "lint": "eslint apps packages eslint.config.js",
+    "lint": "eslint apps packages eslint.config.js vitest.config.ts",
     "build": "pnpm -r --if-present run build",
     "format": "prettier --write . --ignore-unknown"
   },
