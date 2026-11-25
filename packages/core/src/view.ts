@@ -93,7 +93,11 @@ export function visibility(rel: Relation, phase: Phase, s: Settings): Visible {
     case "own":
       return { card: p("card"), options: p("card"), bound: p("reveal") };
     case "opponent":
-      return { card: p("reveal"), options: p("deduce") && s.purposeChoice, bound: p("reveal") };
+      return {
+        card: p("reveal"),
+        options: p("deduce") && s.purposeChoice,
+        bound: p("reveal"),
+      };
     case "other":
       return { card: p("review"), options: p("review"), bound: p("review") };
     case "gm":
@@ -111,7 +115,10 @@ function relationOf(viewerTeam: string | null, team: string): Relation {
 
 export function viewFor(room: Room, viewer: Viewer, cs: Cardset): View | null {
   const isGM = viewer.kind === "gm";
-  const me = viewer.kind === "member" ? room.members.find((m) => m.id === viewer.memberId) : undefined;
+  const me =
+    viewer.kind === "member"
+      ? room.members.find((m) => m.id === viewer.memberId)
+      : undefined;
   if (!isGM && !me) return null;
 
   const current = room.dealt ?? room.settings;
@@ -135,7 +142,11 @@ export function viewFor(room: Room, viewer: Viewer, cs: Cardset): View | null {
     };
     const card = st ? cs.cards[st.cardId] : undefined;
     if (!card) return tv;
-    const vis = visibility(isGM ? "gm" : relationOf(me?.team ?? null, id), room.phase, current);
+    const vis = visibility(
+      isGM ? "gm" : relationOf(me?.team ?? null, id),
+      room.phase,
+      current,
+    );
     if (vis.card) tv.card = structuredClone(card);
     if (vis.options) tv.options = [...card.options];
     if (vis.bound) {
@@ -158,12 +169,23 @@ export function viewFor(room: Room, viewer: Viewer, cs: Cardset): View | null {
     unassigned: room.members.filter((m) => !m.team).map(summary),
   };
 
-  const showScenes = isGM || (!!me?.team && room.phase !== "lobby" && atLeast(room.phase, "deduce"));
+  const showScenes =
+    isGM ||
+    (!!me?.team && room.phase !== "lobby" && atLeast(room.phase, "deduce"));
   if (showScenes) base.scenes = [...cs.scenes[cardModeOf(current)]];
 
   if (isGM) {
-    return { ...base, role: "gm", nextSettings: { ...room.settings }, log: room.log.map((l) => ({ ...l })) };
+    return {
+      ...base,
+      role: "gm",
+      nextSettings: { ...room.settings },
+      log: room.log.map((l) => ({ ...l })),
+    };
   }
   const m = me as NonNullable<typeof me>;
-  return { ...base, role: "member", me: { id: m.id, nickname: m.nickname, team: m.team } };
+  return {
+    ...base,
+    role: "member",
+    me: { id: m.id, nickname: m.nickname, team: m.team },
+  };
 }

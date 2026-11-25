@@ -15,7 +15,14 @@ import {
   type Settings,
 } from "./deal.js";
 
-export const PHASES = ["lobby", "card", "investigate", "deduce", "reveal", "review"] as const;
+export const PHASES = [
+  "lobby",
+  "card",
+  "investigate",
+  "deduce",
+  "reveal",
+  "review",
+] as const;
 export type Phase = (typeof PHASES)[number];
 
 export const PHASE_LABELS: Record<Phase, string> = {
@@ -95,7 +102,8 @@ export type ErrorCode =
   | "deal_failed";
 
 export type Failure = { ok: false; code: ErrorCode; message: string };
-export type Result<T extends object = object> = ({ ok: true; room: Room } & T) | Failure;
+export type Result<T extends object = object> =
+  ({ ok: true; room: Room } & T) | Failure;
 
 function fail(code: ErrorCode, message: string): Failure {
   return { ok: false, code, message };
@@ -153,14 +161,18 @@ function touch(room: Room, now: number): void {
 
 function addLog(room: Room, now: number, text: string): void {
   room.log.push({ at: now, text });
-  if (room.log.length > LOG_LIMIT) room.log.splice(0, room.log.length - LOG_LIMIT);
+  if (room.log.length > LOG_LIMIT)
+    room.log.splice(0, room.log.length - LOG_LIMIT);
 }
 
 function findMember(room: Room, memberId: string): Member | undefined {
   return room.members.find((m) => m.id === memberId);
 }
 
-export function findMemberByToken(room: Room, tokenHash: string): Member | undefined {
+export function findMemberByToken(
+  room: Room,
+  tokenHash: string,
+): Member | undefined {
   return room.members.find((m) => m.tokenHash === tokenHash);
 }
 
@@ -176,12 +188,18 @@ export function makeRoomCode(rand: Rand): string {
   return s;
 }
 
+/** 制御文字（ニックネームから除く） */
+// eslint-disable-next-line no-control-regex
+const CONTROL_CHARS = /[\u0000-\u001f\u007f]/g;
+
 /** ニックネームを整える。使えなければ null */
 export function normalizeNickname(raw: unknown): string | null {
   if (typeof raw !== "string") return null;
-  // 制御文字は除く
-  // eslint-disable-next-line no-control-regex
-  const s = raw.normalize("NFKC").replace(/[\u0000-\u001f\u007f]/g, "").replace(/\s+/g, " ").trim();
+  const s = raw
+    .normalize("NFKC")
+    .replace(CONTROL_CHARS, "")
+    .replace(/\s+/g, " ")
+    .trim();
   if (!s || [...s].length > NICKNAME_MAX) return null;
   return s;
 }
@@ -197,7 +215,12 @@ function uniqueNickname(room: Room, name: string): string {
 }
 
 /** 配る。いまの settings で山を作り、チームを最初のカードにする */
-function dealInto(room: Room, cs: Cardset, rand: Rand, now: number): Failure | null {
+function dealInto(
+  room: Room,
+  cs: Cardset,
+  rand: Rand,
+  now: number,
+): Failure | null {
   let decks: Deck[];
   try {
     decks = deal(cs, room.settings, rand);
@@ -211,7 +234,12 @@ function dealInto(room: Room, cs: Cardset, rand: Rand, now: number): Failure | n
   for (const id of teamIds(room.dealt.groups)) {
     const first = deckOf(room, id)[0];
     if (!first) return fail("deal_failed", "カードを配れませんでした。");
-    room.teams[id] = { cardId: first, redrawsUsed: 0, confirmed: false, confirmedBy: null };
+    room.teams[id] = {
+      cardId: first,
+      redrawsUsed: 0,
+      confirmed: false,
+      confirmedBy: null,
+    };
   }
   // なくなったグループにいたメンバーはチーム未選択に戻す
   for (const m of room.members) {
@@ -253,7 +281,11 @@ export function createRoom(args: {
 
 // ===== GM の操作 =====
 /** 設定を変える（集合と振り返りのときだけ）。振り返りで変えた設定は次のセットから効く */
-export function updateSettings(src: Room, settings: unknown, now: number): Result {
+export function updateSettings(
+  src: Room,
+  settings: unknown,
+  now: number,
+): Result {
   if (src.phase !== "lobby" && src.phase !== "review") {
     return fail("bad_phase", "設定は、集合と振り返りのときだけ変えられます。");
   }
@@ -311,14 +343,22 @@ export function setPhase(
     addLog(room, now, "配ったカードを取り消しました");
   }
   room.phase = to;
-  addLog(room, now, `${target > from ? "進めました" : "戻しました"}：${PHASE_LABELS[to]}`);
+  addLog(
+    room,
+    now,
+    `${target > from ? "進めました" : "戻しました"}：${PHASE_LABELS[to]}`,
+  );
   touch(room, now);
   return { ok: true, room };
 }
 
 /** 次のセット（K5）。同じ部屋・チーム分けのまま、カードを配り直してカード提示へ */
-export function nextSet(src: Room, ctx: { cardset: Cardset; rand: Rand; now: number }): Result {
-  if (src.phase !== "review") return fail("bad_phase", "次のセットは、振り返りのときに始められます。");
+export function nextSet(
+  src: Room,
+  ctx: { cardset: Cardset; rand: Rand; now: number },
+): Result {
+  if (src.phase !== "review")
+    return fail("bad_phase", "次のセットは、振り返りのときに始められます。");
   const room = clone(src);
   room.setNo += 1;
   const err = dealInto(room, ctx.cardset, ctx.rand, ctx.now);
@@ -329,11 +369,20 @@ export function nextSet(src: Room, ctx: { cardset: Cardset; rand: Rand; now: num
 }
 
 /** GM がメンバーをほかのチームへ移す（null なら未選択へ） */
-export function moveMember(src: Room, memberId: string, team: string | null, now: number): Result {
+export function moveMember(
+  src: Room,
+  memberId: string,
+  team: string | null,
+  now: number,
+): Result {
   const r = changeTeam(src, memberId, team);
   if (!r.ok) return r;
   const m = findMember(r.room, memberId) as Member;
-  addLog(r.room, now, `GMが${m.nickname}さんを${team ?? "チーム未選択"}へ移しました`);
+  addLog(
+    r.room,
+    now,
+    `GMが${m.nickname}さんを${team ?? "チーム未選択"}へ移しました`,
+  );
   touch(r.room, now);
   return r;
 }
@@ -345,7 +394,11 @@ export function join(
   now: number,
 ): Result<{ member: Member }> {
   const name = normalizeNickname(args.nickname);
-  if (!name) return fail("bad_nickname", `ニックネームは1〜${NICKNAME_MAX}文字で入れてください。`);
+  if (!name)
+    return fail(
+      "bad_nickname",
+      `ニックネームは1〜${NICKNAME_MAX}文字で入れてください。`,
+    );
   const room = clone(src);
   const member: Member = {
     id: args.id,
@@ -361,19 +414,32 @@ export function join(
 }
 
 function changeTeam(src: Room, memberId: string, team: string | null): Result {
-  if (!findMember(src, memberId)) return fail("not_member", "メンバーが見つかりません。");
-  if (team !== null && !isActiveTeam(src, team)) return fail("bad_team", "チームが正しくありません。");
+  if (!findMember(src, memberId))
+    return fail("not_member", "メンバーが見つかりません。");
+  if (team !== null && !isActiveTeam(src, team))
+    return fail("bad_team", "チームが正しくありません。");
   const room = clone(src);
   (findMember(room, memberId) as Member).team = team;
   return { ok: true, room };
 }
 
 /** チームを選ぶ・変える（いつでもできる。null なら未選択へ） */
-export function chooseTeam(src: Room, memberId: string, team: string | null, now: number): Result {
+export function chooseTeam(
+  src: Room,
+  memberId: string,
+  team: string | null,
+  now: number,
+): Result {
   const r = changeTeam(src, memberId, team);
   if (!r.ok) return r;
   const m = findMember(r.room, memberId) as Member;
-  addLog(r.room, now, team ? `${m.nickname}さんが${team}を選びました` : `${m.nickname}さんがチームを外れました`);
+  addLog(
+    r.room,
+    now,
+    team
+      ? `${m.nickname}さんが${team}を選びました`
+      : `${m.nickname}さんがチームを外れました`,
+  );
   touch(r.room, now);
   return r;
 }
@@ -386,14 +452,19 @@ function checkCardOp(
 ): { member: Member; team: TeamState; teamId: string } | Failure {
   const member = findMember(room, memberId);
   if (!member) return fail("not_member", "メンバーが見つかりません。");
-  if (room.phase !== "card") return fail("bad_phase", "いまはカードを選ぶフェーズではありません。");
+  if (room.phase !== "card")
+    return fail("bad_phase", "いまはカードを選ぶフェーズではありません。");
   if (!member.team) return fail("no_team", "先にチームを選んでください。");
   const team = room.teams[member.team];
   if (!team) return fail("no_team", "チームが見つかりません。");
   if (req.setNo !== room.setNo || req.cardId !== team.cardId) {
-    return fail("stale", "画面が古くなっています。最新のカードを確かめてください。");
+    return fail(
+      "stale",
+      "画面が古くなっています。最新のカードを確かめてください。",
+    );
   }
-  if (team.confirmed) return fail("already_confirmed", "このチームのカードは確定しています。");
+  if (team.confirmed)
+    return fail("already_confirmed", "このチームのカードは確定しています。");
   return { member, team, teamId: member.team };
 }
 
@@ -407,7 +478,10 @@ export function redraw(
   const c = checkCardOp(room, memberId, req);
   if ("ok" in c) return c;
   if (room.dealt?.dist === "common") {
-    return fail("redraw_not_allowed", "共通カード方式なので、カードの引き直しはできません。");
+    return fail(
+      "redraw_not_allowed",
+      "共通カード方式なので、カードの引き直しはできません。",
+    );
   }
   const next = deckOf(room, c.teamId)[c.team.redrawsUsed + 1];
   if (c.team.redrawsUsed >= REDRAW_LIMIT || !next) {
@@ -441,7 +515,11 @@ export function confirm(
 }
 
 /** 接続状態を変える（出来事の記録には残さない） */
-export function setConnected(src: Room, memberId: string, connected: boolean): Result {
+export function setConnected(
+  src: Room,
+  memberId: string,
+  connected: boolean,
+): Result {
   const m0 = findMember(src, memberId);
   if (!m0) return fail("not_member", "メンバーが見つかりません。");
   if (m0.connected === connected) return { ok: true, room: src };

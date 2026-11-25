@@ -3,7 +3,14 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { loadCardset, type Cardset } from "../cards.js";
 import { DEFAULT_SETTINGS, mulberry32, type Settings } from "../deal.js";
-import { chooseTeam, createRoom, join, teamIds, type Result, type Room } from "../room.js";
+import {
+  chooseTeam,
+  createRoom,
+  join,
+  teamIds,
+  type Result,
+  type Room,
+} from "../room.js";
 
 const ROOT = new URL("../../../../", import.meta.url);
 
@@ -23,7 +30,11 @@ export function loadV1(): { run: (code: string) => unknown } {
   const ctx = vm.createContext({
     document: { getElementById: () => null },
     window: { addEventListener: () => undefined },
-    localStorage: { getItem: () => null, setItem: () => undefined, removeItem: () => undefined },
+    localStorage: {
+      getItem: () => null,
+      setItem: () => undefined,
+      removeItem: () => undefined,
+    },
     location: { hash: "", href: "" },
     fetch: () => new Promise(() => undefined), // boot() を止めておく
     TextEncoder,
@@ -36,7 +47,10 @@ export function loadV1(): { run: (code: string) => unknown } {
   return {
     // 結果は JSON を通して、こちら側のオブジェクトにする
     run: (src: string) => {
-      const out = vm.runInContext(`JSON.stringify((() => { ${src} })())`, ctx) as string | undefined;
+      const out = vm.runInContext(
+        `JSON.stringify((() => { ${src} })())`,
+        ctx,
+      ) as string | undefined;
       return out === undefined ? undefined : JSON.parse(out);
     },
   };
@@ -68,10 +82,17 @@ export function roomWithMembers(
   let n = 0;
   const add = (team: string | null) => {
     n += 1;
-    room = ok(join(room, { id: `m${n}`, tokenHash: `token-hash-${n}`, nickname: `参加者${n}` }, 1000 + n));
+    room = ok(
+      join(
+        room,
+        { id: `m${n}`, tokenHash: `token-hash-${n}`, nickname: `参加者${n}` },
+        1000 + n,
+      ),
+    );
     if (team) room = ok(chooseTeam(room, `m${n}`, team, 1000 + n));
   };
-  for (const id of teamIds(room.settings.groups)) for (let i = 0; i < perTeam; i++) add(id);
+  for (const id of teamIds(room.settings.groups))
+    for (let i = 0; i < perTeam; i++) add(id);
   for (let i = 0; i < unassigned; i++) add(null);
   return room;
 }

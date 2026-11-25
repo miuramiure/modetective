@@ -44,11 +44,20 @@ export function cardModeOf(s: Pick<Settings, "mode">): CardMode {
 export function checkSettings(s: unknown): string | null {
   if (typeof s !== "object" || s === null) return "設定がありません。";
   const o = s as Record<string, unknown>;
-  if (o.dist !== "common" && o.dist !== "individual") return "カードの提示のしかたが正しくありません。";
-  if (o.mode !== "scenario" && o.mode !== "kikikomi") return "お題のモードが正しくありません。";
-  if (typeof o.purposeChoice !== "boolean") return "目的の答え方が正しくありません。";
-  if (typeof o.gmPlays !== "boolean") return "ゲームマスターの参加が正しくありません。";
-  if (typeof o.groups !== "number" || !Number.isInteger(o.groups) || o.groups < 1 || o.groups > MAX_GROUPS) {
+  if (o.dist !== "common" && o.dist !== "individual")
+    return "カードの提示のしかたが正しくありません。";
+  if (o.mode !== "scenario" && o.mode !== "kikikomi")
+    return "お題のモードが正しくありません。";
+  if (typeof o.purposeChoice !== "boolean")
+    return "目的の答え方が正しくありません。";
+  if (typeof o.gmPlays !== "boolean")
+    return "ゲームマスターの参加が正しくありません。";
+  if (
+    typeof o.groups !== "number" ||
+    !Number.isInteger(o.groups) ||
+    o.groups < 1 ||
+    o.groups > MAX_GROUPS
+  ) {
     return `グループ数は1〜${MAX_GROUPS}で選んでください。`;
   }
   return null;
@@ -129,15 +138,25 @@ export function deal(cs: Cardset, settings: Settings, rand: Rand): Deck[] {
   for (let g = 0; g < groups; g++) {
     let best: Deck | null = null;
     for (let attempt = 0; attempt < 400 && !best; attempt++) {
-      const order = shuffle(ids, rand).sort((x, y) => (used[x] ?? 0) - (used[y] ?? 0));
+      const order = shuffle(ids, rand).sort(
+        (x, y) => (used[x] ?? 0) - (used[y] ?? 0),
+      );
       const A: string[] = [];
       const B: string[] = [];
       for (const id of order) {
-        if (A.length < poolSize && !B.includes(id) && B.every((b) => !conflicts(cs, C(id), C(b)))) {
+        if (
+          A.length < poolSize &&
+          !B.includes(id) &&
+          B.every((b) => !conflicts(cs, C(id), C(b)))
+        ) {
           A.push(id);
           continue;
         }
-        if (B.length < poolSize && !A.includes(id) && A.every((a) => !conflicts(cs, C(id), C(a)))) {
+        if (
+          B.length < poolSize &&
+          !A.includes(id) &&
+          A.every((a) => !conflicts(cs, C(id), C(a)))
+        ) {
           B.push(id);
         }
         if (A.length === poolSize && B.length === poolSize) break;

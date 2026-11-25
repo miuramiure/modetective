@@ -107,8 +107,10 @@ export function parseCards(text: string): ParsedCards {
   const scenes: Record<CardMode, string[]> = { T: [], K: [] };
   const bounds: Record<string, Bound> = {};
   let cur: { id: string; f: Record<string, string> } | null = null;
-  const raw: Record<string, { mode: CardMode; stars: string; kind: string; f: Record<string, string> }> =
-    {};
+  const raw: Record<
+    string,
+    { mode: CardMode; stars: string; kind: string; f: Record<string, string> }
+  > = {};
 
   for (let i = 0; i < lines.length; i++) {
     const L = lines[i] ?? "";
@@ -116,7 +118,12 @@ export function parseCards(text: string): ParsedCards {
     if (h) {
       const id = h[1] ?? "";
       if (raw[id]) problems.push(`カード番号 ${id} が重なっています`);
-      const entry = { mode: id[0] as CardMode, stars: h[2] ?? "", kind: h[3] ?? "", f: {} as Record<string, string> };
+      const entry = {
+        mode: id[0] as CardMode,
+        stars: h[2] ?? "",
+        kind: h[3] ?? "",
+        f: {} as Record<string, string>,
+      };
       raw[id] = entry;
       cur = { id, f: entry.f };
       continue;
@@ -137,7 +144,14 @@ export function parseCards(text: string): ParsedCards {
         const [c0 = "", c1 = "", c2 = "", c3 = ""] = r;
         const scene = c0.replace(/（[^）]*）/g, "").trim();
         const near = [...new Set([...namesIn(c1), ...namesIn(c2)])];
-        bounds[`${mode}:${scene}`] = { mode, scene, near, near1: c1, near2: c2, text: c3 };
+        bounds[`${mode}:${scene}`] = {
+          mode,
+          scene,
+          near,
+          near1: c1,
+          near2: c2,
+          text: c3,
+        };
       }
     }
   }
@@ -179,25 +193,35 @@ export function loadCardset(text: string, version: string): Cardset {
   for (const c of cards) {
     const seen = p.fieldsSeen[c.id] ?? [];
     for (const name of REQUIRED_FIELDS) {
-      if (!seen.includes(name)) problems.push(`${c.id}：「${name}」がありません`);
+      if (!seen.includes(name))
+        problems.push(`${c.id}：「${name}」がありません`);
     }
     const list = p.scenes[c.mode];
     if (c.scene && !list.includes(c.scene)) {
-      problems.push(`${c.id}：場面「${c.scene}」が場面の選択肢リスト（${c.mode === "T" ? "3-1" : "3-2"}）にありません`);
+      problems.push(
+        `${c.id}：場面「${c.scene}」が場面の選択肢リスト（${c.mode === "T" ? "3-1" : "3-2"}）にありません`,
+      );
     }
-    if (c.options.length < 2) problems.push(`${c.id}：目的の選択肢が2つ未満です`);
+    if (c.options.length < 2)
+      problems.push(`${c.id}：目的の選択肢が2つ未満です`);
     if (c.purpose && !c.options.includes(c.purpose)) {
-      problems.push(`${c.id}：目的の選択肢に正解（目的「${c.purpose}」）が含まれていません`);
+      problems.push(
+        `${c.id}：目的の選択肢に正解（目的「${c.purpose}」）が含まれていません`,
+      );
     }
   }
   for (const mode of ["T", "K"] as const) {
     if (cards.some((c) => c.mode === mode) && p.scenes[mode].length === 0) {
-      problems.push(`${mode === "T" ? "3-1" : "3-2"} の場面の選択肢リストが読めません`);
+      problems.push(
+        `${mode === "T" ? "3-1" : "3-2"} の場面の選択肢リストが読めません`,
+      );
     }
   }
   for (const b of Object.values(p.bounds)) {
     if (!p.scenes[b.mode].includes(b.scene)) {
-      problems.push(`対応表（${b.mode === "T" ? "4-1" : "4-2"}）の場面「${b.scene}」が場面の選択肢リストにありません`);
+      problems.push(
+        `対応表（${b.mode === "T" ? "4-1" : "4-2"}）の場面「${b.scene}」が場面の選択肢リストにありません`,
+      );
     }
   }
   if (problems.length) throw new CardsetError(version, problems);

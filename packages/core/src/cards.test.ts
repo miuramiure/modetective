@@ -25,7 +25,11 @@ describe("カード集 v0.4 の読み込み", () => {
     });
     expect(cs.cards.T01?.odai).toContain("**スーパーで何を買えばよいか？**");
     expect(cs.cards.T01?.options).toHaveLength(5);
-    expect(cs.cards.K01).toMatchObject({ mode: "K", stars: "★", kind: "日常系" });
+    expect(cs.cards.K01).toMatchObject({
+      mode: "K",
+      stars: "★",
+      kind: "日常系",
+    });
     expect(cs.cards.K01?.note).toContain("通勤");
   });
 
@@ -56,7 +60,11 @@ describe("カード集 v0.4 の読み込み", () => {
       return { cards, scenes: d.scenes, bounds };
     `);
     const mine = parseCards(text);
-    expect({ cards: mine.cards, scenes: mine.scenes, bounds: mine.bounds }).toEqual(got);
+    expect({
+      cards: mine.cards,
+      scenes: mine.scenes,
+      bounds: mine.bounds,
+    }).toEqual(got);
   });
 });
 
@@ -77,13 +85,23 @@ describe("カード集の検証（おかしければ起動しない）", () => {
   });
 
   it("場面が場面リストにない", () => {
-    const t = text.replace("- **場面**：カレーづくり", "- **場面**：カレーの仕込み");
-    expect(problemsOf(t)).toContainEqual(expect.stringContaining("T01：場面「カレーの仕込み」"));
+    const t = text.replace(
+      "- **場面**：カレーづくり",
+      "- **場面**：カレーの仕込み",
+    );
+    expect(problemsOf(t)).toContainEqual(
+      expect.stringContaining("T01：場面「カレーの仕込み」"),
+    );
   });
 
   it("目的の選択肢に正解がない", () => {
-    const t = text.replace("買い物にかかる時間を見積もる／買い出しの中身を決める／", "買い物にかかる時間を見積もる／");
-    expect(problemsOf(t)).toContainEqual(expect.stringContaining("T01：目的の選択肢に正解"));
+    const t = text.replace(
+      "買い物にかかる時間を見積もる／買い出しの中身を決める／",
+      "買い物にかかる時間を見積もる／",
+    );
+    expect(problemsOf(t)).toContainEqual(
+      expect.stringContaining("T01：目的の選択肢に正解"),
+    );
   });
 
   it("項目が欠けている", () => {
@@ -92,8 +110,13 @@ describe("カード集の検証（おかしければ起動しない）", () => {
   });
 
   it("対応表の場面が場面リストにない", () => {
-    const t = text.replace("| カレーづくり | 弁当づくり、", "| カレー作り | 弁当づくり、");
-    expect(problemsOf(t)).toContainEqual(expect.stringContaining("「カレー作り」が場面の選択肢リストにありません"));
+    const t = text.replace(
+      "| カレーづくり | 弁当づくり、",
+      "| カレー作り | 弁当づくり、",
+    );
+    expect(problemsOf(t)).toContainEqual(
+      expect.stringContaining("「カレー作り」が場面の選択肢リストにありません"),
+    );
   });
 
   it("カード番号が重なっている", () => {

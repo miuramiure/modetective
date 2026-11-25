@@ -25,7 +25,9 @@ describe("組み合わせ禁止", () => {
     expect(conflicts(cs, C("T09"), C("T10"))).toBe(true);
   });
   it("対応表の同じ行に入る場面（どちら向きでも）", () => {
-    const curry = Object.values(cs.cards).find((c) => c.scene === "カレーづくり")!;
+    const curry = Object.values(cs.cards).find(
+      (c) => c.scene === "カレーづくり",
+    )!;
     const fake = { ...curry, id: "T99", scene: "料理教室", note: "" };
     expect(conflicts(cs, curry, fake)).toBe(true);
     expect(conflicts(cs, fake, curry)).toBe(true);
@@ -37,7 +39,9 @@ describe("組み合わせ禁止", () => {
     expect(conflicts(cs, C("K10"), C("K02"))).toBe(true);
   });
   it("関係のないカードは組み合わせてよい", () => {
-    const ok = Object.values(cs.cards).filter((c) => c.mode === "T" && !conflicts(cs, C("T01"), c));
+    const ok = Object.values(cs.cards).filter(
+      (c) => c.mode === "T" && !conflicts(cs, C("T01"), c),
+    );
     expect(ok.length).toBeGreaterThan(10);
   });
 });
@@ -46,7 +50,8 @@ describe("配布", () => {
   const combos: Settings[] = [];
   for (const dist of ["individual", "common"] as const)
     for (const mode of ["scenario", "kikikomi"] as const)
-      for (const groups of [1, 3, MAX_GROUPS]) combos.push(S({ dist, mode, groups }));
+      for (const groups of [1, 3, MAX_GROUPS])
+        combos.push(S({ dist, mode, groups }));
 
   it.each(combos)("%o：山のどの組み合わせも組み合わせ禁止にならない", (s) => {
     for (let seed = 1; seed <= 30; seed++) {
@@ -59,7 +64,9 @@ describe("配布", () => {
         expect(d.B).toHaveLength(size);
         expect(new Set([...d.A, ...d.B]).size).toBe(size * 2);
         for (const id of [...d.A, ...d.B]) expect(id[0]).toBe(prefix);
-        for (const a of d.A) for (const b of d.B) expect(conflicts(cs, cs.cards[a]!, cs.cards[b]!)).toBe(false);
+        for (const a of d.A)
+          for (const b of d.B)
+            expect(conflicts(cs, cs.cards[a]!, cs.cards[b]!)).toBe(false);
       }
     }
   });
@@ -67,12 +74,16 @@ describe("配布", () => {
   it("同じ乱数なら同じ配り方になる", () => {
     const s = S({ groups: 4 });
     expect(deal(cs, s, mulberry32(42))).toEqual(deal(cs, s, mulberry32(42)));
-    expect(deal(cs, s, mulberry32(42))).not.toEqual(deal(cs, s, mulberry32(43)));
+    expect(deal(cs, s, mulberry32(42))).not.toEqual(
+      deal(cs, s, mulberry32(43)),
+    );
   });
 
   it("v1 の deal と同じ配り方になる（同じ乱数の種）", () => {
     const v1 = loadV1();
-    v1.run(`DATA = parseCards(${JSON.stringify(readCardText())}); return null;`);
+    v1.run(
+      `DATA = parseCards(${JSON.stringify(readCardText())}); return null;`,
+    );
     for (const seed of [1, 7, 12345, 2 ** 31 - 1]) {
       for (const [mode, v1mode] of [
         ["scenario", "T"],
@@ -82,8 +93,12 @@ describe("配布", () => {
           ["individual", "indiv"],
           ["common", "common"],
         ] as const) {
-          const want = v1.run(`return deal({ s: ${seed}, mode: "${v1mode}", dist: "${v1dist}", n: 5 });`);
-          expect(deal(cs, S({ mode, dist, groups: 5 }), mulberry32(seed))).toEqual(want);
+          const want = v1.run(
+            `return deal({ s: ${seed}, mode: "${v1mode}", dist: "${v1dist}", n: 5 });`,
+          );
+          expect(
+            deal(cs, S({ mode, dist, groups: 5 }), mulberry32(seed)),
+          ).toEqual(want);
         }
       }
     }
