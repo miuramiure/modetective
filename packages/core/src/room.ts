@@ -514,6 +514,15 @@ export function confirm(
   return { ok: true, room };
 }
 
+/** GM のトークンを差し替える（別の端末から「部屋コード＋GM合言葉」で入り直したとき） */
+export function setGmToken(src: Room, tokenHash: string, now: number): Result {
+  const room = clone(src);
+  room.gm = { tokenHash };
+  addLog(room, now, "GMが入り直しました");
+  touch(room, now);
+  return { ok: true, room };
+}
+
 /** 接続状態を変える（出来事の記録には残さない） */
 export function setConnected(
   src: Room,
