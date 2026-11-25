@@ -1,0 +1,26 @@
+{
+  "name": "modetective",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.21.0",
+  "engines": {
+    "node": ">=22 <23",
+    "pnpm": ">=12 <13"
+  },
+  "scripts": {
+    "test": "vitest run --passWithNoTests",
+    "lint": "eslint apps packages eslint.config.js",
+    "build": "pnpm -r --if-present run build",
+    "format": "prettier --write . --ignore-unknown"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.15.30",
+    "eslint": "^10.15.0",
+    "globals": "^16.4.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.44.0",
+    "vitest": "^3.2.4"
+  }
+}

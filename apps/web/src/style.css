@@ -1,0 +1,22 @@
+:root {
+  font-family: sans-serif;
+  color: #202124;
+  background: #f7f9fa;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+}
+
+main {
+  max-width: 48rem;
+  margin: 4rem auto;
+  padding: 0 1.5rem;
+}
+
+h1 {
+  color: #007985;
+}
