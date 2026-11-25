@@ -16,5 +16,12 @@ export default tseslint.config(
         ...globals.node,
       },
     },
+    rules: {
+      // 日本語の文言の全角スペースは許す（文字列・テンプレート・JSX の文字の中だけ）
+      "no-irregular-whitespace": [
+        "error",
+        { skipStrings: true, skipTemplates: true, skipJSXText: true },
+      ],
+    },
   },
 );

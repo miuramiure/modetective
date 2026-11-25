@@ -11,7 +11,8 @@
     "test": "vitest run --passWithNoTests",
     "lint": "eslint apps packages eslint.config.js vitest.config.ts",
     "build": "pnpm -r --if-present run build",
-    "format": "prettier --write . --ignore-unknown"
+    "format": "prettier --write . --ignore-unknown",
+    "dev": "pnpm --parallel --filter @mdt/server --filter @mdt/web run dev"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
