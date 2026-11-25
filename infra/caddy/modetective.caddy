@@ -1,0 +1,5 @@
+# games-api.m-miura.jp の /modetective/* を modetective サーバーへ（パスはそのまま渡す）
+# VM では /etc/caddy/games.d/modetective.caddy に置く（ITB の Caddyfile が import する）
+handle /modetective/* {
+	reverse_proxy 127.0.0.1:3102
+}

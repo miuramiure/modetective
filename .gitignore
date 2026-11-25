@@ -6,3 +6,5 @@ coverage/
 .DS_Store
 Thumbs.db
 apps/server/.data/
+build/
+infra/scripts/wing.env

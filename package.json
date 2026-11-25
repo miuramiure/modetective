@@ -9,10 +9,13 @@
   },
   "scripts": {
     "test": "vitest run --passWithNoTests",
-    "lint": "eslint apps packages eslint.config.js vitest.config.ts",
+    "lint": "eslint apps packages infra eslint.config.js vitest.config.ts",
     "build": "pnpm -r --if-present run build",
     "format": "prettier --write . --ignore-unknown",
-    "dev": "pnpm --parallel --filter @mdt/server --filter @mdt/web run dev"
+    "dev": "pnpm --parallel --filter @mdt/server --filter @mdt/web run dev",
+    "deploy:server": "node infra/scripts/deploy-server.mjs",
+    "deploy:web": "node infra/scripts/deploy-web.mjs",
+    "gm-pass": "node infra/scripts/gm-pass.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
