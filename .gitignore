@@ -8,3 +8,6 @@ Thumbs.db
 apps/server/.data/
 build/
 infra/scripts/wing.env
+
+# VS Code のワークスペース設定（各自の手元用）
+*.code-workspace
